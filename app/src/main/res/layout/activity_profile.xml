@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".ProfileActivity"
+    android:background="@color/dark_background">
+
+    <TextView
+        android:id="@+id/profileTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="MÔJ PROFIL"
+        android:textColor="@color/light_background"
+        android:textSize="32dp"
+        android:textStyle="bold"
+        android:fontFamily="@font/poppins_bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/registerCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="@color/log_reg_card"
+        app:layout_constraintTop_toBottomOf="@id/profileTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginHorizontal="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="24dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Meno a priezvisko:"
+                android:fontFamily="@font/poppins"/>
+            <EditText
+                android:id="@+id/name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Meno"
+                android:background="@color/white"
+                android:inputType="textPersonName"
+                android:textColor="@color/black"
+                android:padding="4dp"
+                android:layout_marginBottom="12dp"
+                android:fontFamily="@font/poppins"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="E-mail:"
+                android:fontFamily="@font/poppins"/>
+            <EditText
+                android:id="@+id/email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="E-mail (iba na čítanie)"
+                android:background="@color/white"
+                android:inputType="textEmailAddress"
+                android:textColor="@color/black"
+                android:enabled="false"
+                android:padding="4dp"
+                android:layout_marginBottom="12dp"
+                android:fontFamily="@font/poppins"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rok narodenia:"
+                android:fontFamily="@font/poppins"/>
+            <EditText
+                android:id="@+id/birthYear"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Rok narodenia"
+                android:background="@color/white"
+                android:textColor="@color/black"
+                android:inputType="number"
+                android:padding="4dp"
+                android:layout_marginBottom="12dp"
+                android:fontFamily="@font/poppins"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profilová fotka:"
+                android:fontFamily="@font/poppins"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/profilePhoto"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/ic_person_placeholder" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonUploadPhoto"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Nahrať fotku"
+                        android:backgroundTint="@color/dark_background"
+                        android:textColor="@color/white"
+                        android:textStyle="bold"
+                        app:cornerRadius="24dp"
+                        android:fontFamily="@font/poppins"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonRemovePhoto"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Odstrániť fotku"
+                        android:backgroundTint="@color/dark_background"
+                        android:textColor="@color/white"
+                        android:textStyle="bold"
+                        app:cornerRadius="24dp"
+                        android:fontFamily="@font/poppins"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pohlavie:"
+                android:fontFamily="@font/poppins"/>
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/toggleGender"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:singleSelection="true">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonMale"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Muž"
+                    android:textStyle="bold"
+                    android:textColor="@drawable/toggle_button_text"
+                    android:backgroundTint="@drawable/toggle_button_background"
+                    android:fontFamily="@font/poppins_bold"
+                    app:cornerRadius="24dp"
+                    app:strokeColor="@color/dark_background"
+                    app:strokeWidth="3dp"
+                    app:rippleColor="@color/light_background"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonFemale"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Žena"
+                    android:textStyle="bold"
+                    android:textColor="@drawable/toggle_button_text"
+                    android:backgroundTint="@drawable/toggle_button_background"
+                    android:fontFamily="@font/poppins_bold"
+                    app:cornerRadius="24dp"
+                    app:strokeColor="@color/dark_background"
+                    app:strokeWidth="3dp"
+                    app:rippleColor="@color/light_background"/>
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rola:"
+                android:fontFamily="@font/poppins"/>
+            <RadioGroup
+                android:id="@+id/radioGroupRole"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/radioSwimmer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="plavec"
+                    android:textColor="@color/black"
+                    android:fontFamily="@font/poppins"
+                    android:buttonTint="@color/dark_background"/>
+
+                <RadioButton
+                    android:id="@+id/radioCoach"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="tréner"
+                    android:textColor="@color/black"
+                    android:fontFamily="@font/poppins"
+                    android:buttonTint="@color/dark_background"/>
+            </RadioGroup>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonEdit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Upraviť"
+                    android:backgroundTint="@color/dark_background"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/poppins"
+                    app:cornerRadius="24dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonSaveChanges"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Uložiť zmeny"
+                    android:backgroundTint="@color/dark_background"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/poppins"
+                    app:cornerRadius="24dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+</androidx.constraintlayout.widget.ConstraintLayout>

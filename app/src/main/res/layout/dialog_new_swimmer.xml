@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="18dp"
+    android:orientation="vertical"
+    android:background="@color/log_reg_card"
+    android:gravity="center_horizontal">
+
+    <TextView
+        android:id="@+id/tvDialogTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nový plavec"
+        android:textColor="@color/title"
+        android:textStyle="bold"
+        android:textSize="30dp"
+        android:fontFamily="@font/poppins_bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvLabelName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Meno:"
+            android:textStyle="bold"
+            android:fontFamily="@font/poppins"/>
+
+        <EditText
+            android:id="@+id/etSwimmerName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="meno"
+            android:layout_marginBottom="12dp"
+            android:textColor="#000000"
+            android:inputType="textPersonName"
+            android:background="@color/white"
+            android:padding="4dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins"
+            android:text="Pohlavie:"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/radioGroupGender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radioMale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Muž"
+                android:checked="true"
+                android:padding="4dp"
+                android:buttonTint="@color/dark_background"/>
+
+            <RadioButton
+                android:id="@+id/radioFemale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Žena"
+                android:padding="4dp"
+                android:buttonTint="@color/dark_background"/>
+        </RadioGroup>
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAddSwimmer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pridať"
+        android:backgroundTint="@color/dark_background"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        app:cornerRadius="24dp" />
+
+</LinearLayout>

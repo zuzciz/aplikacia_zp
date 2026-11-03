@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_fina_points"
+        android:title="Výpočet FINA bodov" />
+
+    <item
+        android:id="@+id/nav_limits"
+        android:title="Limity" />
+
+    <item
+        android:id="@+id/nav_progress"
+        android:title="Môj pokrok" />
+
+    <item
+        android:id="@+id/nav_profile"
+        android:title="Môj profil" />
+
+    <item
+        android:id="@+id/nav_logout"
+        android:title="Odhlásiť sa" />
+
+</menu>

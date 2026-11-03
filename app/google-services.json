@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1038571098950",
+    "project_id": "fina-points-app",
+    "storage_bucket": "fina-points-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1038571098950:android:81fdb0a8de0f3f2479cb47",
+        "android_client_info": {
+          "package_name": "sk.tuke.fina_points_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcz9vei_KId6jtIEjM2CBDHXG3pLI270s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
