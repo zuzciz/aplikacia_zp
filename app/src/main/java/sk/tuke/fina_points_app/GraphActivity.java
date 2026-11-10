@@ -74,19 +74,8 @@ public class GraphActivity extends BaseActivity{
     }
 
     private void loadProgressAndDrawChart() {
-        String userId = user.getUid();
-        CollectionReference progressRef;
-        if (selectedSwimmerId != null && !selectedSwimmerId.isEmpty()) {
-            progressRef = db.collection("users")
-                    .document(userId)
-                    .collection("swimmers")
-                    .document(selectedSwimmerId)
-                    .collection("progressRecords");
-        } else {
-            progressRef = db.collection("users")
-                    .document(userId)
-                    .collection("progressRecords");
-        }
+        CollectionReference progressRef =
+                ownerRef(db, user.getUid(), selectedSwimmerId).collection("progressRecords");
 
         Query query;
         if (selectedDiscipline.equals("...")) {

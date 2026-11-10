@@ -17,6 +17,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.DocumentReference;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
@@ -113,6 +114,12 @@ public abstract class BaseActivity extends AppCompatActivity {
         getLayoutInflater().inflate(layoutResID, frameLayout, true);
     }
 
+    protected DocumentReference ownerRef(FirebaseFirestore db, String uid, String swimmerId) {
+        DocumentReference userRef = db.collection("users").document(uid);
+        return (swimmerId != null && !swimmerId.isEmpty())
+                ? userRef.collection("swimmers").document(swimmerId)
+                : userRef;
+    }
     private void logout() {
         FirebaseAuth.getInstance().signOut();
         Intent intent1 = new Intent(BaseActivity.this, IntroActivity.class);

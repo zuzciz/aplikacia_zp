@@ -134,17 +134,12 @@ public class ProgressActivity extends BaseActivity{
                 Log.d("ProgressActivity", "selectedDiscipline: " + selectedDiscipline);
                 Log.d("ProgressActivity", "currentRole: " + role);
 
-                if ("tréner".equalsIgnoreCase(role)) {
-                    if (selectedSwimmerId != null && !selectedSwimmerId.isEmpty()) {
-                        loadProgressRecordsForSwimmer(selectedSwimmerId);
-                    } else {
-                        Log.d("ProgressActivity", "Plavec nebol vybraný – nič sa nenačítava.");
-                        progressList.clear();
-                        progressAdapter.notifyDataSetChanged();
-                    }
+                if ("tréner".equalsIgnoreCase(role) && selectedSwimmerId == null) {
+                    progressList.clear();
+                    progressAdapter.notifyDataSetChanged();
                 } else {
-                    loadProgressRecords();
-                };
+                    loadRecords();
+                }
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
@@ -165,7 +160,7 @@ public class ProgressActivity extends BaseActivity{
                         } else {
                             findViewById(R.id.llSwimmers).setVisibility(View.GONE);
                             btnAddSwimmer.setVisibility(View.GONE);
-                            loadProgressRecords();
+                            loadRecords();
                         }
                     }
                 });
@@ -244,108 +239,42 @@ public class ProgressActivity extends BaseActivity{
         btnAddSwimmer.setOnClickListener(v -> showAddSwimmerDialog());
     }
 
-    private void loadProgressRecords() {
-        String userId = user.getUid();
-        CollectionReference progressRef = db.collection("users")
-                .document(userId)
-                .collection("progressRecords");
-
-        Query query;
-        Log.d("ProgressActivity", "selectedDiscipline: " + selectedDiscipline);
-        //... nacita vsetky zaznamy
-        if (selectedDiscipline.equals("...")) {
-            query = progressRef.orderBy("date", Query.Direction.DESCENDING);
-        } else {
-            query = progressRef.whereEqualTo("discipline", selectedDiscipline)
-                    .orderBy("date", Query.Direction.DESCENDING);
-        }
-
-        query.get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        progressList.clear();
-                        for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
-                            ProgressRecord record = doc.toObject(ProgressRecord.class);
-                            record.setId(doc.getId());  //ulozi id dokumentu do 'id'
-                            progressList.add(record);
-                        }
-
-                        HashMap<String, ProgressRecord> bestRecords = new HashMap<>();
-                        for (ProgressRecord record : progressList) {
-                            String discipline = record.getDiscipline();
-                            if (!bestRecords.containsKey(discipline) ||
-                                    record.getPoints() > bestRecords.get(discipline).getPoints()) {
-                                bestRecords.put(discipline, record);
-                            }
-                        }
-                        for (ProgressRecord record : progressList) {
-                            record.setPersonalBest(bestRecords.get(record.getDiscipline()) == record);
-                        }
-
-                        progressAdapter.notifyDataSetChanged();
-                        Log.d("ProgressActivity", "not for tr Found " + queryDocumentSnapshots.size() + " records");
-
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener(){
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(ProgressActivity.this, "Chyba načítania dát: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
+    private CollectionReference recordsRef() {
+        return ownerRef(db, user.getUid(), selectedSwimmerId).collection("progressRecords");
     }
 
-    //progressrecords pre plavca v profile trenera
-    private void loadProgressRecordsForSwimmer(String swimmerId) {
-        String userId = user.getUid();
-        CollectionReference progressRef = db.collection("users")
-                .document(userId)
-                .collection("swimmers")
-                .document(swimmerId)
-                .collection("progressRecords");
-
-        Query query;
-        Log.d("ProgressActivity", "selectedDiscipline: " + selectedDiscipline);
-        if (selectedDiscipline.equals("...")) {
-            query = progressRef.orderBy("date", Query.Direction.DESCENDING);
-        } else {
-            query = progressRef.whereEqualTo("discipline", selectedDiscipline)
-                    .orderBy("date", Query.Direction.DESCENDING);
-        }
+    private void loadRecords() {
+        Query query = selectedDiscipline.equals("...")
+                ? recordsRef().orderBy("date", Query.Direction.DESCENDING)
+                : recordsRef().whereEqualTo("discipline", selectedDiscipline)
+                .orderBy("date", Query.Direction.DESCENDING);
 
         query.get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        progressList.clear();
-                        for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
-                            ProgressRecord record = doc.toObject(ProgressRecord.class);
-                            record.setId(doc.getId());
-                            progressList.add(record);
-                        }
-                        HashMap<String, ProgressRecord> bestRecords = new HashMap<>();
-                        for (ProgressRecord record : progressList) {
-                            String discipline = record.getDiscipline();
-                            if (!bestRecords.containsKey(discipline) ||
-                                    record.getPoints() > bestRecords.get(discipline).getPoints()) {
-                                bestRecords.put(discipline, record);
-                            }
-                        }
-                        for (ProgressRecord record : progressList) {
-                            record.setPersonalBest(bestRecords.get(record.getDiscipline()) == record);
-                        }
-
-                        progressAdapter.notifyDataSetChanged();
-                        Log.d("ProgressActivity", "Swimmer progress records count: " + queryDocumentSnapshots.size());
+                .addOnSuccessListener(snap -> {
+                    progressList.clear();
+                    for (DocumentSnapshot doc : snap.getDocuments()) {
+                        ProgressRecord record = doc.toObject(ProgressRecord.class);
+                        record.setId(doc.getId());
+                        progressList.add(record);
                     }
+                    markPersonalBests();
+                    progressAdapter.notifyDataSetChanged();
                 })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(ProgressActivity.this, "Chyba načítania dát pre plavca: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
+                .addOnFailureListener(e -> Toast.makeText(ProgressActivity.this,
+                        "Chyba načítania dát: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    private void markPersonalBests() {
+        HashMap<String, ProgressRecord> best = new HashMap<>();
+        for (ProgressRecord r : progressList) {
+            ProgressRecord current = best.get(r.getDiscipline());
+            if (current == null || r.getPoints() > current.getPoints()) {
+                best.put(r.getDiscipline(), r);
+            }
+        }
+        for (ProgressRecord r : progressList) {
+            r.setPersonalBest(best.get(r.getDiscipline()) == r);
+        }
     }
 
     private void loadSwimmers() {
@@ -389,7 +318,7 @@ public class ProgressActivity extends BaseActivity{
                                 Log.d("ProgressActivity", ">> selected swimmerId: " + selectedSwimmerId);
                                 Log.d("ProgressActivity", ">> selected swimmerName: " + selectedSwimmer.getName());
                                 //nacitanie progresu pre plavca
-                                loadProgressRecordsForSwimmer(selectedSwimmerId);
+                                loadRecords();
                             }
                         }
 
@@ -632,37 +561,15 @@ public class ProgressActivity extends BaseActivity{
     }
 
     private void saveRecord(ProgressRecord newRecord, AlertDialog dialog) {
-        if ("tréner".equalsIgnoreCase(role) && selectedSwimmerId != null) {
-            db.collection("users")
-                    .document(user.getUid())
-                    .collection("swimmers")
-                    .document(selectedSwimmerId)
-                    .collection("progressRecords")
-                    .add(newRecord)
-                    .addOnSuccessListener(documentReference -> {
-                        Toast.makeText(ProgressActivity.this, "Výsledok pridaný", Toast.LENGTH_SHORT).show();
-                        dialog.dismiss();
-                        loadProgressRecordsForSwimmer(selectedSwimmerId);
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(ProgressActivity.this, "Chyba pri pridávaní: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
-        } else {
-            db.collection("users")
-                    .document(user.getUid())
-                    .collection("progressRecords")
-                    .add(newRecord)
-                    .addOnSuccessListener(documentReference -> {
-                        Toast.makeText(ProgressActivity.this, "Výsledok pridaný", Toast.LENGTH_SHORT).show();
-                        dialog.dismiss();
-                        loadProgressRecords();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(ProgressActivity.this, "Chyba pri pridávaní: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
-        }
+        recordsRef().add(newRecord)
+                .addOnSuccessListener(ref -> {
+                    Toast.makeText(ProgressActivity.this, "Výsledok pridaný", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                    loadRecords();
+                })
+                .addOnFailureListener(e -> Toast.makeText(ProgressActivity.this,
+                        "Chyba pri pridávaní: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
-
 
     //datepicker dialog
     private void showDatePickerDialog(final EditText etDate) {
@@ -700,35 +607,24 @@ public class ProgressActivity extends BaseActivity{
     }
 
     private void deleteRecord(ProgressRecord record) {
-        if ("tréner".equalsIgnoreCase(role) && selectedSwimmerId != null) {
-            db.collection("users")
-                    .document(user.getUid())
-                    .collection("swimmers")
-                    .document(selectedSwimmerId)
-                    .collection("progressRecords")
-                    .document(record.getId())
-                    .delete()
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(ProgressActivity.this, "Záznam vymazaný", Toast.LENGTH_SHORT).show();
-                        loadProgressRecordsForSwimmer(selectedSwimmerId);
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(ProgressActivity.this, "Chyba pri vymazávaní: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
-        } else {
-            db.collection("users")
-                    .document(user.getUid())
-                    .collection("progressRecords")
-                    .document(record.getId())
-                    .delete()
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(ProgressActivity.this, "Záznam vymazaný", Toast.LENGTH_SHORT).show();
-                        loadProgressRecords();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(ProgressActivity.this, "Chyba pri vymazávaní: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
-        }
+        recordsRef().document(record.getId()).delete()
+                .addOnSuccessListener(unused -> {
+                    Toast.makeText(ProgressActivity.this, "Záznam vymazaný", Toast.LENGTH_SHORT).show();
+                    loadRecords();
+                })
+                .addOnFailureListener(e -> Toast.makeText(ProgressActivity.this,
+                        "Chyba pri vymazávaní: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    private void updateRecord(ProgressRecord oldRecord, ProgressRecord newRecord, AlertDialog dialog) {
+        recordsRef().document(oldRecord.getId()).set(newRecord)
+                .addOnSuccessListener(unused -> {
+                    Toast.makeText(ProgressActivity.this, "Záznam upravený", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                    loadRecords();
+                })
+                .addOnFailureListener(e -> Toast.makeText(ProgressActivity.this,
+                        "Chyba pri úprave: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void showEditDialog(final ProgressRecord record) {
@@ -895,39 +791,9 @@ public class ProgressActivity extends BaseActivity{
                                 (int) minutes, (int) seconds, (int) hundredths);
 
                         calculatePoints(timeInSeconds, record.getDiscipline(), poolLengthStr, pointsResult -> {
-                            ProgressRecord newRecord = new ProgressRecord(timestamp, record.getDiscipline(), poolLengthStr, timeFormatted, pointsResult);
-                            // Aktualizuj Firestore s novými údajmi
-                            if ("tréner".equalsIgnoreCase(role) && selectedSwimmerId != null) {
-                                db.collection("users")
-                                        .document(user.getUid())
-                                        .collection("swimmers")
-                                        .document(selectedSwimmerId)
-                                        .collection("progressRecords")
-                                        .document(record.getId())
-                                        .set(newRecord)
-                                        .addOnSuccessListener(unused -> {
-                                            Toast.makeText(ProgressActivity.this, "Záznam upravený", Toast.LENGTH_SHORT).show();
-                                            editDialog.dismiss();
-                                            loadProgressRecordsForSwimmer(selectedSwimmerId);
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            Toast.makeText(ProgressActivity.this, "Chyba pri úprave: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                        });
-                            } else {
-                                db.collection("users")
-                                        .document(user.getUid())
-                                        .collection("progressRecords")
-                                        .document(record.getId())
-                                        .set(newRecord)
-                                        .addOnSuccessListener(unused -> {
-                                            Toast.makeText(ProgressActivity.this, "Záznam upravený", Toast.LENGTH_SHORT).show();
-                                            editDialog.dismiss();
-                                            loadProgressRecords();
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            Toast.makeText(ProgressActivity.this, "Chyba pri úprave: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                        });
-                            }
+                            ProgressRecord newRecord = new ProgressRecord(timestamp, record.getDiscipline(),
+                                    poolLengthStr, timeFormatted, pointsResult);
+                            updateRecord(record, newRecord, editDialog);
                         });
 
                     } else if (pointsProvided) {
@@ -937,38 +803,9 @@ public class ProgressActivity extends BaseActivity{
                             int seconds = (int) (calculatedTime % 60);
                             int hundredths = (int) ((calculatedTime - minutes * 60 - seconds) * 100);
                             String timeFormatted = String.format(Locale.getDefault(), "%02d:%02d.%02d", minutes, seconds, hundredths);
-                            ProgressRecord newRecord = new ProgressRecord(timestamp, record.getDiscipline(), poolLengthStr, timeFormatted, points);
-                            if ("tréner".equalsIgnoreCase(role) && selectedSwimmerId != null) {
-                                db.collection("users")
-                                        .document(user.getUid())
-                                        .collection("swimmers")
-                                        .document(selectedSwimmerId)
-                                        .collection("progressRecords")
-                                        .document(record.getId())
-                                        .set(newRecord)
-                                        .addOnSuccessListener(unused -> {
-                                            Toast.makeText(ProgressActivity.this, "Záznam upravený", Toast.LENGTH_SHORT).show();
-                                            editDialog.dismiss();
-                                            loadProgressRecordsForSwimmer(selectedSwimmerId);
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            Toast.makeText(ProgressActivity.this, "Chyba pri úprave: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                        });
-                            } else {
-                                db.collection("users")
-                                        .document(user.getUid())
-                                        .collection("progressRecords")
-                                        .document(record.getId())
-                                        .set(newRecord)
-                                        .addOnSuccessListener(unused -> {
-                                            Toast.makeText(ProgressActivity.this, "Záznam upravený", Toast.LENGTH_SHORT).show();
-                                            editDialog.dismiss();
-                                            loadProgressRecords();
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            Toast.makeText(ProgressActivity.this, "Chyba pri úprave: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                        });
-                            }
+                            ProgressRecord newRecord = new ProgressRecord(timestamp, record.getDiscipline(),
+                                    poolLengthStr, timeFormatted, points);
+                            updateRecord(record, newRecord, editDialog);
                         });
                     }
                 } catch (NumberFormatException e) {
