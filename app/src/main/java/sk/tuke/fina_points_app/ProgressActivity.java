@@ -817,9 +817,18 @@ public class ProgressActivity extends BaseActivity{
         editDialog.show();
     }
 
-    private void calculatePoints(double userTime, String discipline, String poolLength, OnPointsCalculated callback) {
-        String usedGender = ("tréner".equalsIgnoreCase(role) && selectedSwimmerGender != null)
+    private String resolveGender() {
+        return ("tréner".equalsIgnoreCase(role) && selectedSwimmerGender != null)
                 ? selectedSwimmerGender : gender;
+    }
+
+    private void calculatePoints(double userTime, String discipline, String poolLength, OnPointsCalculated callback) {
+        String usedGender = resolveGender();
+        if (usedGender == null || usedGender.isEmpty()) {
+            Toast.makeText(this, "Najprv nastavte pohlavie (v profile alebo pri plavcovi).",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
         String stroke = mapStroke(discipline);
         String distance = extractDistance(discipline);
         String collection = poolLength.equals("50") ? "lcm_basetimes" : "scm_basetimes";
@@ -830,18 +839,26 @@ public class ProgressActivity extends BaseActivity{
                 .whereEqualTo("distance", distance)
                 .get()
                 .addOnSuccessListener(snapshot -> {
-                    if (!snapshot.isEmpty()) {
-                        DocumentSnapshot doc = snapshot.getDocuments().get(0);
-                        double baseTime = doc.getDouble("basetime");
-                        int finaPoints = (int) Math.floor(1000.0 * Math.pow(baseTime / userTime, 3.0));
-                        callback.onResult(finaPoints);
+                    if (snapshot.isEmpty()) {
+                        Toast.makeText(this, "Pre túto disciplínu sa nenašiel základný čas.",
+                                Toast.LENGTH_SHORT).show();
+                        return;
                     }
-                });
+                    Double baseTime = snapshot.getDocuments().get(0).getDouble("basetime");
+                    if (baseTime == null) return;
+                    callback.onResult((int) Math.floor(1000.0 * Math.pow(baseTime / userTime, 3.0)));
+                })
+                .addOnFailureListener(e -> Toast.makeText(this,
+                        "Chyba výpočtu: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void calculateTime(int points, String discipline, String poolLength, OnTimeCalculated callback) {
-        String usedGender = ("tréner".equalsIgnoreCase(role) && selectedSwimmerGender != null)
-                ? selectedSwimmerGender : gender;
+        String usedGender = resolveGender();
+        if (usedGender == null || usedGender.isEmpty()) {
+            Toast.makeText(this, "Najprv nastavte pohlavie (v profile alebo pri plavcovi).",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
         String stroke = mapStroke(discipline);
         String distance = extractDistance(discipline);
         String collection = poolLength.equals("50") ? "lcm_basetimes" : "scm_basetimes";
@@ -852,13 +869,17 @@ public class ProgressActivity extends BaseActivity{
                 .whereEqualTo("distance", distance)
                 .get()
                 .addOnSuccessListener(snapshot -> {
-                    if (!snapshot.isEmpty()) {
-                        DocumentSnapshot doc = snapshot.getDocuments().get(0);
-                        double baseTime = doc.getDouble("basetime");
-                        double userTime = baseTime / Math.pow(points / 1000.0, 1.0 / 3.0);
-                        callback.onResult(userTime);
+                    if (snapshot.isEmpty()) {
+                        Toast.makeText(this, "Pre túto disciplínu sa nenašiel základný čas.",
+                                Toast.LENGTH_SHORT).show();
+                        return;
                     }
-                });
+                    Double baseTime = snapshot.getDocuments().get(0).getDouble("basetime");
+                    if (baseTime == null) return;
+                    callback.onResult(baseTime / Math.pow(points / 1000.0, 1.0 / 3.0));
+                })
+                .addOnFailureListener(e -> Toast.makeText(this,
+                        "Chyba výpočtu: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private String mapStroke(String discipline) {

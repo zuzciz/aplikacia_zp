@@ -123,7 +123,8 @@ public class RegisterActivity extends AppCompatActivity {
                     db.collection("users").document(user.getUid())
                             .set(userMap)
                             .addOnSuccessListener(aVoid -> {
-                                Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+                                Intent intent = new Intent(RegisterActivity.this, ProfileActivity.class);
+                                intent.putExtra("EXTRA_FIRST_RUN", true);
                                 startActivity(intent);
                                 finish();
                             })

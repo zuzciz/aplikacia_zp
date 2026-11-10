@@ -45,10 +45,14 @@ public class ProfileActivity extends BaseActivity{
     private FirebaseUser currentUser;
     private Uri imageUri;
 
+    private boolean firstRun;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         inflateLayout(R.layout.activity_profile);
+
+        firstRun = getIntent().getBooleanExtra("EXTRA_FIRST_RUN", false);
 
         imageViewProfilePhoto = findViewById(R.id.profilePhoto);
         buttonUploadPhoto = findViewById(R.id.buttonUploadPhoto);
@@ -192,7 +196,13 @@ public class ProfileActivity extends BaseActivity{
                     imageViewProfilePhoto.setImageResource(R.drawable.ic_person_placeholder);
                 }
             }
-            setFieldsEnabled(false);
+            if (firstRun) {
+                setFieldsEnabled(true);
+                buttonEdit.setVisibility(View.GONE);
+                buttonSaveChanges.setVisibility(View.VISIBLE);
+            } else {
+                setFieldsEnabled(false);
+            }
         }).addOnFailureListener(e ->
                 Toast.makeText(ProfileActivity.this, "Chyba pri načítaní profilu: "
                         + e.getMessage(), Toast.LENGTH_SHORT).show()
@@ -207,6 +217,15 @@ public class ProfileActivity extends BaseActivity{
 
         if (TextUtils.isEmpty(name)) {
             Toast.makeText(this, "Vyplňte meno", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (selectedRoleId == -1) {
+            Toast.makeText(this, "Vyberte rolu (plavec/tréner)", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (toggleGender.getCheckedButtonId() == View.NO_ID) {
+            Toast.makeText(this, "Vyberte pohlavie", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -264,6 +283,10 @@ public class ProfileActivity extends BaseActivity{
                     setFieldsEnabled(false);
                     buttonSaveChanges.setVisibility(View.GONE);
                     buttonEdit.setVisibility(View.VISIBLE);
+                    if (firstRun) {
+                        startActivity(new Intent(ProfileActivity.this, MainActivity.class));
+                        finish();
+                    }
         })
                 .addOnFailureListener(e ->
                 Toast.makeText(ProfileActivity.this, "Chyba pri ukladaní: "
