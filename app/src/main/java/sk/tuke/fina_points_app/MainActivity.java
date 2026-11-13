@@ -23,6 +23,7 @@ import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -245,6 +246,11 @@ public class MainActivity extends BaseActivity {
             gender = "f";
         }
 
+        if (poolLength == null || gender == null) {
+            Toast.makeText(this, "Vyber dĺžku bazéna a pohlavie.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String stroke = spinnerStroke.getSelectedItem().toString();
         String distance = spinnerDistance.getSelectedItem().toString();
         String minutesString = editTextMinutes.getText().toString().trim();
@@ -393,65 +399,104 @@ public class MainActivity extends BaseActivity {
                     }
                 });
     }
-    private void saveToProgress() {
-        String finaStr = editTextFinaPoints.getText().toString().trim();
+
+    private String selectedGender() {
+        int id = toggleGroupGender.getCheckedButtonId();
+        if (id == R.id.buttonMuz) return "m";
+        if (id == R.id.buttonZena) return "f";
+        return null;
+    }
+
+    // Vytvorí záznam z polí na obrazovke, pri chybe vráti null (a ukáže Toast)
+    private ProgressRecord buildRecordFromInputs() {
         String minStr = editTextMinutes.getText().toString().trim();
         String secStr = editTextSeconds.getText().toString().trim();
         String hundStr = editTextHundredths.getText().toString().trim();
+        String finaStr = editTextFinaPoints.getText().toString().trim();
 
-        boolean timeProvided = !minStr.isEmpty() && !secStr.isEmpty() && !hundStr.isEmpty();
-        boolean finaProvided = !finaStr.isEmpty();
-
-        if (!timeProvided && !finaProvided) {
-            Toast.makeText(this, "Najprv vypočítaj body alebo zadaj čas", Toast.LENGTH_SHORT).show();
-            return;
+        if (minStr.isEmpty() || secStr.isEmpty() || hundStr.isEmpty() || finaStr.isEmpty()) {
+            Toast.makeText(this, "Najprv zadaj čas alebo body a stlač Vypočítať.",
+                    Toast.LENGTH_SHORT).show();
+            return null;
         }
 
-        String selectedGender = (toggleGroupGender.getCheckedButtonId() == R.id.buttonMuz) ? "m" : "f";
+        try {
+            String formattedTime = String.format(Locale.getDefault(), "%02d:%02d.%02d",
+                    Integer.parseInt(minStr), Integer.parseInt(secStr), Integer.parseInt(hundStr));
+            int points = Integer.parseInt(finaStr);
+            String poolLength = (toggleGroupPoolLength.getCheckedButtonId() == R.id.button50m) ? "50" : "25";
+            String discipline = spinnerDistance.getSelectedItem().toString() + " "
+                    + spinnerStroke.getSelectedItem().toString();
+            return new ProgressRecord(Timestamp.now(), discipline, poolLength, formattedTime, points);
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Zlé číslo vo vstupe.", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+    }
 
-        //provnanie s pohlavim v profile
-        if (userGender != null && !userGender.equals(selectedGender)) {
+    private void saveToProgress() {
+        String gender = selectedGender();
+        if (gender == null) {
+            Toast.makeText(this, "Vyber pohlavie.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (userGender != null && !userGender.equals(gender)) {
             Toast.makeText(this, "Zadané pohlavie sa nezhoduje s vaším profilom!", Toast.LENGTH_LONG).show();
             return;
         }
 
-        String poolLength = (toggleGroupPoolLength.getCheckedButtonId() == R.id.button50m) ? "50" : "25";
-        String discipline = spinnerDistance.getSelectedItem().toString() + " " + spinnerStroke.getSelectedItem().toString();
+        ProgressRecord record = buildRecordFromInputs();
+        if (record == null) return;
 
-        String formattedTime;
-        int finaPoints;
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        ownerRef(db, uid, null).collection("progressRecords")
+                .add(record)
+                .addOnSuccessListener(r ->
+                        Toast.makeText(this, "Výsledok uložený!", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Chyba pri ukladaní: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
 
-        try {
-            if (timeProvided) {
-                int minutes = Integer.parseInt(minStr);
-                int seconds = Integer.parseInt(secStr);
-                int hundredths = Integer.parseInt(hundStr);
-                formattedTime = String.format(Locale.getDefault(), "%02d:%02d.%02d", minutes, seconds, hundredths);
-                finaPoints = Integer.parseInt(editTextFinaPoints.getText().toString().trim()); // už vypočítané
-            } else {
-                formattedTime = String.format(Locale.getDefault(), "%02d:%02d.%02d", 0, 0, 0); // placeholder ak čas nebol zadaný
-                finaPoints = Integer.parseInt(finaStr);
-            }
-
-            Timestamp now = Timestamp.now();
-            ProgressRecord record = new ProgressRecord(now, discipline, poolLength, formattedTime, finaPoints);
-
-            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            db.collection("users")
-                    .document(uid)
-                    .collection("progressRecords")
-                    .add(record)
-                    .addOnSuccessListener(docRef -> {
-                        Toast.makeText(this, "Výsledok uložený!", Toast.LENGTH_SHORT).show();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(this, "Chyba pri ukladaní: "
-                                + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
-
-        } catch (NumberFormatException e) {
-            Toast.makeText(this, "Zlé číslo vo vstupe.", Toast.LENGTH_SHORT).show();
+    private void saveToSwimmerProgress(String swimmerId, String swimmerName, Dialog dialog) {
+        String gender = selectedGender();
+        if (gender == null) {
+            dialog.dismiss();
+            Toast.makeText(this, "Vyber pohlavie.", Toast.LENGTH_SHORT).show();
+            return;
         }
+        ProgressRecord record = buildRecordFromInputs();
+        if (record == null) {
+            dialog.dismiss();
+            return;
+        }
+
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DocumentReference swimmerRef = ownerRef(db, uid, swimmerId);
+
+        swimmerRef.get()
+                .addOnSuccessListener(doc -> {
+                    String swimmerGender = doc.getString("gender");
+                    if (swimmerGender != null && !swimmerGender.equals(gender)) {
+                        Toast.makeText(this, "Pohlavie plavca sa nezhoduje, vyber iného plavca!", Toast.LENGTH_LONG).show();
+                        dialog.dismiss();
+                        return;
+                    }
+                    swimmerRef.collection("progressRecords")
+                            .add(record)
+                            .addOnSuccessListener(r -> {
+                                dialog.dismiss();
+                                Toast.makeText(this, "Výsledok pre " + swimmerName + " uložený!",
+                                        Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(this, "Chyba: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                dialog.dismiss();
+                            });
+
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Nepodarilo sa načítať plavca: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show());
     }
     private void showSelectSwimmerDialog() {
         LayoutInflater inflater = LayoutInflater.from(this);
@@ -500,75 +545,5 @@ public class MainActivity extends BaseActivity {
         });
 
         dialog.show();
-    }
-
-    private void saveToSwimmerProgress(String swimmerId, String swimmerName, Dialog dialog) {
-        String finaStr = editTextFinaPoints.getText().toString().trim();
-        String minStr = editTextMinutes.getText().toString().trim();
-        String secStr = editTextSeconds.getText().toString().trim();
-        String hundStr = editTextHundredths.getText().toString().trim();
-
-        boolean timeProvided = !minStr.isEmpty() && !secStr.isEmpty() && !hundStr.isEmpty();
-        boolean finaProvided = !finaStr.isEmpty();
-
-        if (!timeProvided && !finaProvided) {
-            Toast.makeText(this, "Zadaj čas alebo body", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String selectedGender = (toggleGroupGender.getCheckedButtonId() == R.id.buttonMuz) ? "m" : "f";
-
-        db.collection("users")
-                .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                .collection("swimmers")
-                .document(swimmerId)
-                .get()
-                .addOnSuccessListener(doc -> {
-                    String swimmerGender = doc.getString("gender");
-                    if (swimmerGender != null && !swimmerGender.equals(selectedGender)) {
-                        Toast.makeText(this, "Pohlavie plavca sa nezhoduje!", Toast.LENGTH_LONG).show();
-                        return;
-                    }
-
-                    String poolLength = (toggleGroupPoolLength.getCheckedButtonId() == R.id.button50m) ? "50" : "25";
-                    String discipline = spinnerDistance.getSelectedItem().toString() + " " + spinnerStroke.getSelectedItem().toString();
-
-                    String formattedTime;
-                    int finaPoints;
-
-                    try {
-                        if (timeProvided) {
-                            int minutes = Integer.parseInt(minStr);
-                            int seconds = Integer.parseInt(secStr);
-                            int hundredths = Integer.parseInt(hundStr);
-                            formattedTime = String.format(Locale.getDefault(), "%02d:%02d.%02d", minutes, seconds, hundredths);
-                            finaPoints = Integer.parseInt(editTextFinaPoints.getText().toString().trim());
-                        } else {
-                            formattedTime = String.format(Locale.getDefault(), "%02d:%02d.%02d", 0, 0, 0);
-                            finaPoints = Integer.parseInt(finaStr);
-                        }
-
-                        Timestamp now = Timestamp.now();
-
-                        ProgressRecord record = new ProgressRecord(now, discipline, poolLength, formattedTime, finaPoints);
-                        db.collection("users")
-                                .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                .collection("swimmers")
-                                .document(swimmerId)
-                                .collection("progressRecords")
-                                .add(record)
-                                .addOnSuccessListener(r -> {
-                                    Toast.makeText(this, "Výsledok pre " + swimmerName + " uložený!",
-                                            Toast.LENGTH_SHORT).show();
-                                    dialog.dismiss();
-                                })
-                                .addOnFailureListener(e -> {
-                                    Toast.makeText(this, "Chyba: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                });
-
-                    } catch (NumberFormatException e) {
-                        Toast.makeText(this, "Zlé číslo", Toast.LENGTH_SHORT).show();
-                    }
-                });
     }
 }

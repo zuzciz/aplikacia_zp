@@ -152,6 +152,27 @@
             android:background="@color/white"
             android:textColor="#000000"
             android:layout_marginBottom="12dp"/>
+
+        <CheckBox
+            android:id="@+id/cbCompetitionE"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pretek"
+            android:fontFamily="@font/poppins"
+            android:buttonTint="@color/dark_background" />
+
+        <EditText
+            android:id="@+id/eEventName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Názov pretekov"
+            android:fontFamily="@font/poppins"
+            android:inputType="textCapSentences"
+            android:padding="4dp"
+            android:background="@color/white"
+            android:textColor="#000000"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone" />
     </LinearLayout>
 
     <Button

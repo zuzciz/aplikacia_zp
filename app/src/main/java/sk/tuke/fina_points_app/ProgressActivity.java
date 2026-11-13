@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioGroup;
@@ -345,6 +346,7 @@ public class ProgressActivity extends BaseActivity{
         //prvky z layoutu
         final EditText etSwimmerName = dialogView.findViewById(R.id.etSwimmerName);
         final RadioGroup radioGroupGender = dialogView.findViewById(R.id.radioGroupGender);
+        final EditText etBirthYear = dialogView.findViewById(R.id.etBirthYear);
         Button btnAddSwimmer = dialogView.findViewById(R.id.btnAddSwimmer);
 
         final AlertDialog dialog = builder.create();
@@ -365,10 +367,28 @@ public class ProgressActivity extends BaseActivity{
             } else {
                 swimmerGender = "";
             }
+            Integer birthYear = null;
+            String byStr = etBirthYear.getText().toString().trim();
+            if (!byStr.isEmpty()) {
+                try {
+                    birthYear = Integer.parseInt(byStr);
+                } catch (NumberFormatException e) {
+                    Toast.makeText(ProgressActivity.this, "Neplatný rok narodenia", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                int thisYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
+                if (birthYear < 1940 || birthYear > thisYear) {
+                    Toast.makeText(ProgressActivity.this, "Neplatný rok narodenia", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+            Swimmer newSwimmer = new Swimmer(swimmerName, swimmerGender);
+            newSwimmer.setBirthYear(birthYear);
+
             db.collection("users")
                     .document(user.getUid())
                     .collection("swimmers")
-                    .add(new Swimmer(swimmerName, swimmerGender))
+                    .add(newSwimmer)
                     .addOnSuccessListener(docRef -> {
                         Toast.makeText(ProgressActivity.this, "Plavec pridaný",
                                 Toast.LENGTH_SHORT).show();
@@ -396,6 +416,10 @@ public class ProgressActivity extends BaseActivity{
         final EditText etMinutes = dialogView.findViewById(R.id.etMinutes);
         final EditText etSeconds = dialogView.findViewById(R.id.etSeconds);
         final EditText etHundredths = dialogView.findViewById(R.id.etHundredths);
+        final CheckBox cbCompetition = dialogView.findViewById(R.id.cbCompetition);
+        final EditText etEventName = dialogView.findViewById(R.id.etEventName);
+        cbCompetition.setOnCheckedChangeListener((b, checked) ->
+                etEventName.setVisibility(checked ? View.VISIBLE : View.GONE));
         Button btnSubmit = dialogView.findViewById(R.id.btnSubmit);
         final AlertDialog dialog = builder.create();
 
@@ -537,6 +561,9 @@ public class ProgressActivity extends BaseActivity{
                         //vypocet bodov
                         calculatePoints(timeInSeconds, selectedDiscipline, poolLengthStr, pointsResult -> {
                             ProgressRecord newRecord = new ProgressRecord(timestamp, selectedDiscipline, poolLengthStr, timeFormatted, pointsResult);
+                            newRecord.setCompetition(cbCompetition.isChecked());
+                            newRecord.setEventName(cbCompetition.isChecked()
+                                    ? etEventName.getText().toString().trim() : null);
                             saveRecord(newRecord, dialog);
                         });
 
@@ -548,6 +575,9 @@ public class ProgressActivity extends BaseActivity{
                             int hundredths = (int) ((calculatedTime - minutes * 60 - seconds) * 100);
                             String timeFormatted = String.format(Locale.getDefault(), "%02d:%02d.%02d", minutes, seconds, hundredths);
                             ProgressRecord newRecord = new ProgressRecord(timestamp, selectedDiscipline, poolLengthStr, timeFormatted, points);
+                            newRecord.setCompetition(cbCompetition.isChecked());
+                            newRecord.setEventName(cbCompetition.isChecked()
+                                    ? etEventName.getText().toString().trim() : null);
                             saveRecord(newRecord, dialog);
                         });
                     }
@@ -639,6 +669,10 @@ public class ProgressActivity extends BaseActivity{
         final EditText eSeconds = dialogView.findViewById(R.id.eSeconds);
         final EditText eHundredths = dialogView.findViewById(R.id.eHundredths);
         final EditText ePoints = dialogView.findViewById(R.id.ePoints);
+        final CheckBox cbCompetitionE = dialogView.findViewById(R.id.cbCompetitionE);
+        final EditText eEventName = dialogView.findViewById(R.id.eEventName);
+        cbCompetitionE.setOnCheckedChangeListener((b, checked) ->
+                eEventName.setVisibility(checked ? View.VISIBLE : View.GONE));
         Button btnSubmit = dialogView.findViewById(R.id.btnSubmit);
 
         ArrayAdapter<String> poolAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, Arrays.asList("25", "50"));
@@ -666,6 +700,8 @@ public class ProgressActivity extends BaseActivity{
             }
         }
         ePoints.setText(String.valueOf(record.getPoints()));
+        cbCompetitionE.setChecked(record.isCompetition());
+        if (record.getEventName() != null) eEventName.setText(record.getEventName());
 
         final AlertDialog editDialog = builder.create();
 
@@ -793,6 +829,9 @@ public class ProgressActivity extends BaseActivity{
                         calculatePoints(timeInSeconds, record.getDiscipline(), poolLengthStr, pointsResult -> {
                             ProgressRecord newRecord = new ProgressRecord(timestamp, record.getDiscipline(),
                                     poolLengthStr, timeFormatted, pointsResult);
+                            newRecord.setCompetition(cbCompetitionE.isChecked());
+                            newRecord.setEventName(cbCompetitionE.isChecked()
+                                    ? eEventName.getText().toString().trim() : null);
                             updateRecord(record, newRecord, editDialog);
                         });
 
@@ -805,6 +844,9 @@ public class ProgressActivity extends BaseActivity{
                             String timeFormatted = String.format(Locale.getDefault(), "%02d:%02d.%02d", minutes, seconds, hundredths);
                             ProgressRecord newRecord = new ProgressRecord(timestamp, record.getDiscipline(),
                                     poolLengthStr, timeFormatted, points);
+                            newRecord.setCompetition(cbCompetitionE.isChecked());
+                            newRecord.setEventName(cbCompetitionE.isChecked()
+                                    ? eEventName.getText().toString().trim() : null);
                             updateRecord(record, newRecord, editDialog);
                         });
                     }
