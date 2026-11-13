@@ -69,6 +69,11 @@ public abstract class BaseActivity extends AppCompatActivity {
                 drawerLayout.closeDrawers();
                 return true;
             }
+            else if (item.getItemId() == R.id.nav_training) {
+                startActivity(new Intent(this, TrainingActivity.class));
+                drawerLayout.closeDrawers();
+                return true;
+            }
             else if (item.getItemId() == R.id.nav_profile) {
                 startActivity(new Intent(this, ProfileActivity.class));
                 drawerLayout.closeDrawers();

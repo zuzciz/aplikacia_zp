@@ -30,6 +30,7 @@
         <activity android:name=".LimitsActivity" />
         <activity android:name=".ProgressActivity" />
         <activity android:name=".GraphActivity"/>
+        <activity android:name=".TrainingActivity"/>
 
         <meta-data
             android:name="preloaded_fonts"

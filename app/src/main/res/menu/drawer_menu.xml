@@ -13,6 +13,10 @@
         android:title="Môj pokrok" />
 
     <item
+        android:id="@+id/nav_training"
+        android:title="Tréningy" />
+
+    <item
         android:id="@+id/nav_profile"
         android:title="Môj profil" />
 
