@@ -24,4 +24,8 @@
         android:id="@+id/nav_logout"
         android:title="Odhlásiť sa" />
 
+    <item
+        android:id="@+id/nav_login"
+        android:title="Prihlásenie/Registrácia" />
+
 </menu>

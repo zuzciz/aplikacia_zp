@@ -50,6 +50,11 @@ public class ProfileActivity extends BaseActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            startActivity(new Intent(this, IntroActivity.class));
+            finish();
+            return;
+        }
         inflateLayout(R.layout.activity_profile);
 
         firstRun = getIntent().getBooleanExtra("EXTRA_FIRST_RUN", false);

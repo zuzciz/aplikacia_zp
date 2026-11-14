@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace 'sk.tuke.fina_points_app'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId "sk.tuke.fina_points_app"

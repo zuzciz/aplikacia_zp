@@ -31,6 +31,10 @@
         <activity android:name=".ProgressActivity" />
         <activity android:name=".GraphActivity"/>
         <activity android:name=".TrainingActivity"/>
+        <activity
+            android:name=".TrainingEditActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <meta-data
             android:name="preloaded_fonts"

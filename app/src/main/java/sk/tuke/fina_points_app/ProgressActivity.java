@@ -77,6 +77,11 @@ public class ProgressActivity extends BaseActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            startActivity(new Intent(this, IntroActivity.class));
+            finish();
+            return;
+        }
         inflateLayout(R.layout.activity_progress);
 
         //firebase

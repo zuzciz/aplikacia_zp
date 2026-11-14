@@ -35,6 +35,8 @@
             android:textAlignment="center"
             android:textColor="@android:color/black"
             android:textSize="14sp"
+            android:maxLines="3"
+            android:ellipsize="end"
             app:layout_constraintStart_toEndOf="@id/tvDate"
             app:layout_constraintEnd_toStartOf="@id/tvLoad"
             app:layout_constraintTop_toTopOf="parent"

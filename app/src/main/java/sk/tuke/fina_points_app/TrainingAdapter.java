@@ -2,6 +2,7 @@ package sk.tuke.fina_points_app;
 
 import android.annotation.SuppressLint;
 import android.graphics.Color;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,9 +58,27 @@ public class TrainingAdapter extends RecyclerView.Adapter<TrainingAdapter.VH> {
                 : "N/A");
 
         StringBuilder sb = new StringBuilder();
-        sb.append(r.getType() != null ? r.getType() : "N/A");
-        sb.append(" · ").append(r.getDurationMin()).append(" min");
-        if (r.getDistanceM() > 0) sb.append(" · ").append(r.getDistanceM()).append(" m");
+        String type = r.getType() != null ? r.getType() : "N/A";
+        sb.append(type).append(" · ").append(r.getDurationMin()).append(" min");
+
+        if (("plávanie".equals(type) || "beh".equals(type)) && r.getDistanceM() > 0) {
+            sb.append(" · ").append(r.getDistanceM()).append(" m");
+        }
+        if ("beh".equals(type) && r.getPaceText().length() > 0) {
+            sb.append(" · ").append(r.getPaceText());
+        }
+        if ("plávanie".equals(type) && r.getSets() != null && !r.getSets().isEmpty()) {
+            sb.append(" · častí: ").append(r.getSets().size());
+        }
+        if ("regenerácia".equals(type) && r.getRecoveryType() != null) {
+            sb.append(" · ").append(r.getRecoveryType());
+        }
+        if ("posilovňa".equals(type) && r.getExercises() != null && !r.getExercises().isEmpty()) {
+            sb.append(" · ").append(TextUtils.join(", ", r.getExercises()));
+        }
+        if ("suchá príprava".equals(type) && r.getDrylandTypes() != null && !r.getDrylandTypes().isEmpty()) {
+            sb.append(" · ").append(TextUtils.join(", ", r.getDrylandTypes()));
+        }
         h.tvType.setText(sb.toString());
 
         h.tvLoad.setText(String.valueOf(r.getLoad()));

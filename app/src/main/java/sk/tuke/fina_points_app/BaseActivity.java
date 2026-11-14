@@ -2,6 +2,7 @@ package sk.tuke.fina_points_app;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -79,6 +80,11 @@ public abstract class BaseActivity extends AppCompatActivity {
                 drawerLayout.closeDrawers();
                 return true;
             }
+            else if (item.getItemId() == R.id.nav_login) {
+                startActivity(new Intent(this, LoginActivity.class));
+                drawerLayout.closeDrawers();
+                return true;
+            }
             else if (item.getItemId() == R.id.nav_logout){
                     logout();
                     drawerLayout.closeDrawers();
@@ -110,13 +116,30 @@ public abstract class BaseActivity extends AppCompatActivity {
                             usernameTextView.setText(name);
                         }
                     });
+        } else {
+            usernameTextView.setText("Hosť");
         }
-
     }
 
     protected void inflateLayout(int layoutResID) {
         FrameLayout frameLayout = findViewById(R.id.content_frame);
         getLayoutInflater().inflate(layoutResID, frameLayout, true);
+    }
+
+    private void updateMenuForAuth() {
+        boolean loggedIn = FirebaseAuth.getInstance().getCurrentUser() != null;
+        Menu menu = navigationView.getMenu();
+        menu.findItem(R.id.nav_progress).setVisible(loggedIn);
+        menu.findItem(R.id.nav_training).setVisible(loggedIn);
+        menu.findItem(R.id.nav_profile).setVisible(loggedIn);
+        menu.findItem(R.id.nav_logout).setVisible(loggedIn);
+        menu.findItem(R.id.nav_login).setVisible(!loggedIn);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateMenuForAuth();
     }
 
     protected DocumentReference ownerRef(FirebaseFirestore db, String uid, String swimmerId) {

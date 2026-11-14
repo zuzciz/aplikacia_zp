@@ -198,6 +198,7 @@ public class MainActivity extends BaseActivity {
             //pouzivatel neprihlaseny
             userGender = null;
             userRole = null;
+            buttonSaveToProgress.setVisibility(View.GONE);
         }
 
         // tlacidlo na vypocet

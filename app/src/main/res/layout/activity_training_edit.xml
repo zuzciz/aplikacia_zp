@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:fitsSystemWindows="true"
+    android:background="@color/log_reg_card">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:id="@+id/tvDialogTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nový tréning"
+            android:textColor="@color/title"
+            android:textStyle="bold"
+            android:textSize="30dp"
+            android:fontFamily="@font/poppins_bold" />
+
+        <LinearLayout
+            android:id="@+id/secAssign"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Priradiť plavcom:"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins" />
+
+            <CheckBox
+                android:id="@+id/cbAllSwimmers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Všetci"
+                android:textStyle="bold"
+                android:buttonTint="@color/dark_background" />
+
+            <LinearLayout
+                android:id="@+id/llSwimmerChecks"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="12dp" />
+        </LinearLayout>
+
+        <!-- DÁTUM -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dátum:"
+            android:textStyle="bold"
+            android:fontFamily="@font/poppins" />
+
+        <EditText
+            android:id="@+id/etDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Dátum (dd.MM.yyyy)"
+            android:focusable="false"
+            android:textColor="#000000"
+            android:layout_marginBottom="12dp"
+            android:background="@color/white"
+            android:padding="4dp" />
+
+        <!-- TYP -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Typ tréningu:"
+            android:textStyle="bold"
+            android:fontFamily="@font/poppins" />
+
+        <Spinner
+            android:id="@+id/spinnerType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:padding="4dp"
+            android:background="@drawable/rounded_white_background" />
+
+        <!-- TRVANIE -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Trvanie (min):"
+            android:textStyle="bold"
+            android:fontFamily="@font/poppins" />
+
+        <EditText
+            android:id="@+id/etDuration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="napr. 90"
+            android:inputType="number"
+            android:maxLength="3"
+            android:textColor="#000000"
+            android:layout_marginBottom="12dp"
+            android:background="@color/white"
+            android:padding="4dp" />
+
+        <!-- PLÁVANIE: dĺžka bazéna -->
+        <LinearLayout
+            android:id="@+id/secPool"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dĺžka bazéna (m):"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins" />
+
+            <Spinner
+                android:id="@+id/spinnerPool"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:padding="4dp"
+                android:background="@drawable/rounded_white_background" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/secSwimSets"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Časti tréningu:"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins" />
+
+            <LinearLayout
+                android:id="@+id/llSets"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="vertical" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddSet"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="+ Pridať časť"
+                android:backgroundTint="@color/dark_background"
+                android:textColor="@color/white"
+                app:cornerRadius="24dp"
+                android:fontFamily="@font/poppins" />
+
+            <TextView
+                android:id="@+id/tvSwimTotal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="12dp"
+                android:text="Spolu: 0 m"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins" />
+        </LinearLayout>
+
+        <!-- PLÁVANIE (zatiaľ) + BEH: vzdialenosť -->
+        <LinearLayout
+            android:id="@+id/secDistance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvDistanceLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Vzdialenosť (m):"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins" />
+
+            <EditText
+                android:id="@+id/etDistance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="napr. 3000"
+                android:inputType="number"
+                android:maxLength="6"
+                android:textColor="#000000"
+                android:layout_marginBottom="6dp"
+                android:background="@color/white"
+                android:padding="4dp" />
+
+            <TextView
+                android:id="@+id/tvPace"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pace: –"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- POSILOVŇA: cviky -->
+        <LinearLayout
+            android:id="@+id/secGym"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cviky:"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupGym"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <EditText
+                    android:id="@+id/etGymCustom"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Vlastný cvik"
+                    android:inputType="textCapSentences"
+                    android:textColor="#000000"
+                    android:background="@color/white"
+                    android:padding="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnGymAdd"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="+"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/dark_background"
+                    android:textColor="@color/white"
+                    app:cornerRadius="24dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- REGENERÁCIA: typ -->
+        <LinearLayout
+            android:id="@+id/secRecovery"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Typ regenerácie:"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins" />
+
+            <Spinner
+                android:id="@+id/spinnerRecovery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:padding="4dp"
+                android:background="@drawable/rounded_white_background" />
+        </LinearLayout>
+
+        <!-- SUCHÁ PRÍPRAVA: typy -->
+        <LinearLayout
+            android:id="@+id/secDryland"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Druh suchej prípravy:"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupDryland"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <EditText
+                    android:id="@+id/etDrylandCustom"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Vlastný druh"
+                    android:inputType="textCapSentences"
+                    android:textColor="#000000"
+                    android:background="@color/white"
+                    android:padding="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDrylandAdd"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="+"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/dark_background"
+                    android:textColor="@color/white"
+                    app:cornerRadius="24dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- RPE -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Námaha RPE (1 – 10):"
+            android:textStyle="bold"
+            android:fontFamily="@font/poppins" />
+
+        <EditText
+            android:id="@+id/etRpe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="1 = veľmi ľahko, 10 = maximum"
+            android:inputType="number"
+            android:maxLength="2"
+            android:textColor="#000000"
+            android:layout_marginBottom="6dp"
+            android:background="@color/white"
+            android:padding="4dp" />
+
+        <TextView
+            android:id="@+id/tvLoadPreview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Záťaž: –"
+            android:textStyle="bold"
+            android:fontFamily="@font/poppins"
+            android:layout_marginBottom="12dp" />
+
+        <!-- POZNÁMKA -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Poznámka:"
+            android:textStyle="bold"
+            android:fontFamily="@font/poppins" />
+
+        <EditText
+            android:id="@+id/etNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="nepovinné"
+            android:inputType="textCapSentences|textMultiLine"
+            android:textColor="#000000"
+            android:layout_marginBottom="12dp"
+            android:background="@color/white"
+            android:padding="4dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Zrušiť"
+                android:layout_marginEnd="12dp"
+                android:backgroundTint="@color/dark_background"
+                android:textColor="@color/white"
+                app:cornerRadius="24dp"
+                android:fontFamily="@font/poppins" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSubmit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Uložiť"
+                android:backgroundTint="@color/dark_background"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                app:cornerRadius="24dp"
+                android:fontFamily="@font/poppins" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

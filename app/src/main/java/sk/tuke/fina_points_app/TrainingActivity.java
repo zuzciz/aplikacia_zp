@@ -2,6 +2,7 @@ package sk.tuke.fina_points_app;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -15,6 +16,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -54,6 +57,11 @@ public class TrainingActivity extends BaseActivity {
     private Spinner spinnerSwimmers;
     private TextView tvWeekLoad;
     private MaterialButton btnAddTraining;
+    private final ActivityResultLauncher<Intent> editLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) loadRecords();
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +87,7 @@ public class TrainingActivity extends BaseActivity {
         adapter.setListener(new TrainingAdapter.Listener() {
             @Override
             public void onEditClick(TrainingRecord record) {
-                showTrainingDialog(record);
+                openEditor(record);
             }
 
             @Override
@@ -89,11 +97,7 @@ public class TrainingActivity extends BaseActivity {
         });
 
         btnAddTraining.setOnClickListener(v -> {
-            if ("tréner".equalsIgnoreCase(role) && selectedSwimmerId == null) {
-                Toast.makeText(this, "Najprv vyber plavca.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            showTrainingDialog(null);
+            openEditor(null);
         });
 
         db.collection("users").document(user.getUid()).get()
@@ -192,9 +196,27 @@ public class TrainingActivity extends BaseActivity {
                 .show();
     }
 
+    private void openEditor(TrainingRecord existing) {
+        Intent i = new Intent(this, TrainingEditActivity.class);
+        if (existing != null) {
+            // úprava existujúceho záznamu (tréner má vybraného plavca)
+            i.putExtra(TrainingEditActivity.EXTRA_RECORD_ID, existing.getId());
+            if (selectedSwimmerId != null) {
+                i.putExtra(TrainingEditActivity.EXTRA_SWIMMER_ID, selectedSwimmerId);
+            }
+        } else if ("tréner".equalsIgnoreCase(role)) {
+            // nový tréning trénera: priradenie plavcom v editore
+            i.putExtra(TrainingEditActivity.EXTRA_TRAINER_ADD, true);
+            if (selectedSwimmerId != null) {
+                i.putExtra(TrainingEditActivity.EXTRA_PRESELECT_ID, selectedSwimmerId);
+            }
+        }
+        editLauncher.launch(i);
+    }
+
     // existing == null -> pridanie, inak úprava
     private void showTrainingDialog(final TrainingRecord existing) {
-        View view = getLayoutInflater().inflate(R.layout.dialog_training, null);
+        View view = getLayoutInflater().inflate(R.layout.activity_training_edit, null);
         final AlertDialog dialog = new AlertDialog.Builder(this).setView(view).create();
 
         TextView tvTitle = view.findViewById(R.id.tvDialogTitle);
